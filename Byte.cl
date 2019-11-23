@@ -1,25 +1,38 @@
 (defun drawTable() 
 ;;  (print state)
  (initializeTable))
-
 (defun initializeTable() 
     (let* ((state '())
     (sizeOfTable (progn (print "Do you want to play with table 8 or 10 : ") (read)))
     ;; (print sizeOfTable)
-    
     (modeGame (progn (print "Do you want to play human vs human or human vs computer, choose h or c: ") (read)))
     ;; (print modeGame)
     (state (chooseTable sizeOfTable))
+    (result '("X" "X" "O"))
     )
-    (if (equal sizeOfTable '8) (drawEightFields state) )
-    (print state)
+    (draw sizeOfTable state)
+    ;; (print (checkEnd sizeOfTable result))
+    ;; (print (countStack '("X" "O" "." "." "." "." "." "." ".")))
+    ;; (print (findNode '(A 1) state))
+    ;; (print (checkIfNodeExists '(A 1) '((B 2) (C 3))))
+    ;; (print (checkIfNeighboursHaveStack '((B 2)) state))
+    ;; (print (checkIfNeighbours '(A 1) '(B 2) state))
+    ;;(print (breadthFirst state '((B 2)) '()))
+    (setq state (makeMove state '(B 2) '(C 1) '0))
+	(draw sizeOfTable state)
+	(setq state (makeMove state '(C 1) '(D 2) '0))
+	(draw sizeOfTable state)
     )
 )
-
+;; Funkcija koja iscrtava tablu u zavisnosti od prosledjene velicine
+(defun draw(sizeOfTable state)
+    (if (equal sizeOfTable '8) (drawEightFields state) (drawTenFields state))
+)
+;; Inicijalizacija koja odredjuje koja ce tabela biti kreirana 8x8 ili 10x10
 (defun chooseTable(sizeOfTable)
     (if (equal sizeOfTable '8) (fillEight) (fillTen))
 )
-
+;; Inicijalno popunjavanje table velicine 8 i 10 posebno
 (defun fillEight()
     (let ((state '()))
     (progn 
@@ -66,7 +79,6 @@
     state    
     )
 )
-
 (defun fillTen()
     (let ((state) '())
     (progn 
@@ -132,117 +144,335 @@
     state
     )
     )
-
-
 (defun drawEightFields(state) 
     (progn 
     (print "8")
 	(format t "~%    1    2    3    4    5    6    7    8")
-    (drawAllEightTable state)
-	;; (drawOdd 8 0 "A" state )
-	;; ;
-	;; (drawEven 8 4 "B" state)
-	;; ;
-  	;; (drawOdd 8 8 "C" state)
-  	;; ;
-  	;; (drawEven 8 12 "D" state)
-	;; ;
-  	;; (drawOdd 8 16 "E" state)
-  	;; ;
-  	;; (drawEven 8 20 "F" state)
-	;; ;
-  	;; (drawOdd 8 24 "G" state)
-  	;; ;
-  	;; (drawEven 8 28 "H" state)
+    (drawEightTable state '8)
 	)
 )
-
-(trace drawEightFields)
-
-(defun drawAllEightTable(state)
+;; Kreiranje asocijativne liste koja ima prvi element kao key slovo, tj.oznaku vrste, a drugi je vrednost od koje pocinju elementi kolona u state
+(defun drawEightTable(state val)
     (let ((alista '((A 0) (B 4) (C 8) (D 12) (E 16) (F 20) (G 24) (H 28))))
-        (drawFields alista '0 '8 state)
+        (drawFields alista '0 '8 state val)
     )
 )
-
-(defun drawFields(alista num size state) 
-    (cond ((null alista) '())
-        (t (progn (drawRow (caar alista) (cadar alista) num size state) (drawFields (cdr alista) (1+ num) size state)))
+;; Iscrtava polja, i to za svaku vrstu
+(defun drawFields(alista num size state val) 
+    (cond ((equal val '8)
+        (cond ((null alista) '())
+        (t (progn (drawRow (caar alista) (cadar alista) num size state) (drawFields (cdr alista) (1+ num) size state val)))
+    ))
+    (t(progn (cond ((null alista) '())
+        (t (progn (drawTenRow (caar alista) (cadar alista) num size state) (drawFields (cdr alista) (1+ num) size state val)))
+    )
+    ))
     )
 )
-
-(defun drawRow2(startPosition size state str pom letter)
-(if (equal pom '2)(format t str
-        (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
-		(nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
-		(nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
-		(nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
+(defun fillRow(startPosition size state formatText mode letter)
+    (if (equal mode '2)(format t formatText
+            (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
+            (nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
+            (nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
+            (nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
+    )
+    (format t formatText letter
+            (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
+            (nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
+            (nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
+            (nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
+    ))
 )
-(format t str letter
-        (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
-		(nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
-		(nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
-		(nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
-))
-)
-
 (defun drawRow(letter startPosition type size state)
     (cond ((<= (mod type 2) '0) 
        (progn 
-		(drawRow2 startPosition size state "~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
-        (drawRow2 startPosition (- size 3) state "~%~a  ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
-	    (drawRow2 startPosition (- size 6) state"~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+		(fillRow startPosition size state "~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+        (fillRow startPosition (- size 3) state "~%~a  ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
+	    (fillRow startPosition (- size 6) state"~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
        ))
        (t (progn
-          (drawRow2 startPosition size state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
-		  (drawRow2 startPosition (- size 3) state "~%~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
-          (drawRow2 startPosition (- size 6) state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)  
+          (fillRow startPosition size state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+		  (fillRow startPosition (- size 3) state "~%~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
+          (fillRow startPosition (- size 6) state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)  
        ))
     )
 )
-;; (defun drawOdd(size startPosition letter state)
-;;     (format t "~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 
-;; 		(nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
-;; 		(nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;; 	(format t "~%~a  ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" letter
-;; 		(nth (- size 3) (caddr (nth startPosition state))) (nth (- size 4) (caddr (nth startPosition state))) (nth (- size 5) (caddr (nth startPosition state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 1 startPosition) state))) (nth (- size 4) (caddr (nth (+ 1 startPosition) state))) (nth (- size 5) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 2 startPosition) state))) (nth (- size 4) (caddr (nth (+ 2 startPosition) state))) (nth (- size 5) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 3 startPosition) state))) (nth (- size 4) (caddr (nth (+ 3 startPosition) state))) (nth (- size 5) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;; 	(format t "~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 
-;; 		(nth (- size 6) (caddr (nth startPosition state))) (nth (- size 7) (caddr (nth startPosition state))) (nth (- size 8) (caddr (nth startPosition state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 1 startPosition) state))) (nth (- size 7) (caddr (nth (+ 1 startPosition) state))) (nth (- size 8) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 2 startPosition) state))) (nth (- size 7) (caddr (nth (+ 2 startPosition) state))) (nth (- size 8) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 3 startPosition) state))) (nth (- size 7) (caddr (nth (+ 3 startPosition) state))) (nth (- size 8) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;; )
-
-;; (defun drawEven(size startPosition letter state)
-;;      (format t "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 
-;; 		(nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
-;; 		(nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;;     (format t "~%~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a"  letter
-;; 		(nth (- size 3) (caddr (nth startPosition state))) (nth (- size 4) (caddr (nth startPosition state))) (nth (- size 5) (caddr (nth startPosition state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 1 startPosition) state))) (nth (- size 4) (caddr (nth (+ 1 startPosition) state))) (nth (- size 5) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 2 startPosition) state))) (nth (- size 4) (caddr (nth (+ 2 startPosition) state))) (nth (- size 5) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth (- size 3) (caddr (nth (+ 3 startPosition) state))) (nth (- size 4) (caddr (nth (+ 3 startPosition) state))) (nth (- size 5) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;; 	(format t "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 
-;; 		(nth (- size 6) (caddr (nth startPosition state))) (nth (- size 7) (caddr (nth startPosition state))) (nth (- size 8) (caddr (nth startPosition state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 1 startPosition) state))) (nth (- size 7) (caddr (nth (+ 1 startPosition) state))) (nth (- size 8) (caddr (nth (+ 1 startPosition) state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 2 startPosition) state))) (nth (- size 7) (caddr (nth (+ 2 startPosition) state))) (nth (- size 8) (caddr (nth (+ 2 startPosition) state))) 
-;; 		(nth (- size 6) (caddr (nth (+ 3 startPosition) state))) (nth (- size 7) (caddr (nth (+ 3 startPosition) state))) (nth (- size 8) (caddr (nth (+ 3 startPosition) state))) 
-;; 		)
-;; )
-
 (defun drawTenFields(state)
-    (print "Usao sam u 10"))
+    (progn
+        (format t "~%    1    2    3    4    5    6    7    8    9    10")
+        (drawTenTable state '10)
+    )
+)
+(defun drawTenTable(state val)
+    (let ((alista '((A 0) (B 5) (C 10) (D 15) (E 20) (F 25) (G 30) (H 35) (I 40) (J 45))))
+        (drawFields alista '0 '8 state val)
+    )
+)
+(defun drawTenRow(letter startPosition type size state)
+    (cond ((<= (mod type 2) '0) 
+       (progn 
+		(fillTenRow startPosition size state "~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+        (fillTenRow startPosition (- size 3) state "~%~a  ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
+	    (fillTenRow startPosition (- size 6) state"~%   ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+       ))
+       (t (progn
+          (fillTenRow startPosition size state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)
+		  (fillTenRow startPosition (- size 3) state "~%~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 1 letter)
+          (fillTenRow startPosition (- size 6) state "~%        ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a       ~a~a~a" 2 letter)  
+       ))
+    )
+)
+(defun fillTenRow(startPosition size state formatText mode letter)
+    (if (equal mode '2)(format t formatText
+            (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
+            (nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
+            (nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
+            (nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state)))
+            (nth size (caddr (nth (+ 4 startPosition) state))) (nth (- size 1) (caddr (nth (+ 4 startPosition) state))) (nth (- size 2) (caddr (nth (+ 4 startPosition) state))) 
+    )
+    (format t formatText letter
+            (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
+            (nth size (caddr (nth (+ 1 startPosition) state))) (nth (- size 1) (caddr (nth (+ 1 startPosition) state))) (nth (- size 2) (caddr (nth (+ 1 startPosition) state))) 
+            (nth size (caddr (nth (+ 2 startPosition) state))) (nth (- size 1) (caddr (nth (+ 2 startPosition) state))) (nth (- size 2) (caddr (nth (+ 2 startPosition) state))) 
+            (nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state)))
+            (nth size (caddr (nth (+ 4 startPosition) state))) (nth (- size 1) (caddr (nth (+ 4 startPosition) state))) (nth (- size 2) (caddr (nth (+ 4 startPosition) state)))  
+    ))
+)
+;; Proverava da li je kraj, ako je popunjeno 2/3 ili 3/5 ili ako je do kraja napunjen, ne vraca
+(defun checkEnd (num result) 
+  (cond ((equal num 8) (if (equal (length result) 3) t 
+                         (cond ((equal (countO result) 2) t ) 
+                               ((equal (countX result) 2) t ) 
+                               (t nil ))))
+        ((equal num 10) (if (equal (length result) 5) t
+                          (cond ((equal (countO result) 3) t ) 
+                               ((equal (countX result) 3) t ) 
+                               (t nil ))))
+    ))
+;; Racuna broj O u steku ili X
+(defun countO (result) (if (null result) '0 
+                           (if (equal (car result) "O") (+ 1 (countO (cdr result))) 
+                             (countO (cdr result)))))
 
+(defun countX (result) (if (null result) '0 
+                           (if (equal (car result) "X") (+ 1 (countX (cdr result))) 
+                             (countX (cdr result)))))
+;;Izracunava broj elemenata u steku 
+(defun countStack(stack) (if (null stack) '0 
+                             (+ (countO stack) (countX stack))
+                        )
+)
+;; Pronalazi trazeni cvor u grafu i vraca ga u obliku npr. ((A 1) ((B 2)) ("." "." "." "." "." "." "." "." "."))
+(defun findNode (node state) (if (null state) '() 
+                                (if (equal (caar state) node) (car state) (findNode node (cdr state)))))
+;; Proverava da li neki cvor postoji u prosledjenoj listi
+(defun checkIfNodeExists(node lista) 
+    (cond ((null lista) '())
+            ((equal (car lista) node) t)
+            (t(checkIfNodeExists node (cdr lista)))
+    )
+)
+;; Proverava susedne cvorove da li poseduju neki element/stek na njima
+(defun checkIfNeighboursHaveStack(neighbours state)
+    (cond ((null neighbours) '())
+            ((> (countStack (caddr (findNode (car neighbours) state))) 0) t)
+            (t (checkIfNeighboursHaveStack (cdr neighbours) state))
+    )
+)
+;; Proverava da li su dva cvora susedi
+(defun checkIfNeighbours(node1 node2 state)
+    (if (findInNeighbours node2 (cadr (findNode node1 state))) t nil)
+)
+;; Proverava da li se cvor nalazi u prosledjenoj listi suseda
+(defun findInNeighbours(node listn)
+    (cond ((null listn) '())
+            ((equal node (car listn)) t)
+            (t (findInNeighbours node (cdr listn)))
+    )
+)
+;; Funkcija koja smesta nove cvorove potomke, koji se vec ne nalaze u listi obradjenih i vraca iste
+;; razlika skupova
+(defun new-nodes(descendants nodes)
+    (cond ((null descendants) '())
+            (t (if (processNode (car descendants) nodes) 
+                (cons (car descendants) (new-nodes (cdr descendants) nodes))
+                (new-nodes (cdr descendants) nodes)
+                )
+            )
+    )
+)
+;; Funkcija koja proverava da li je neki cvor clan obradjenih cvorova, tj.da li se potomak vec nalazi u listi cvorova
+;; ako se ne nalazi, vraca t, ako je obradjen pre vraca nil
+(defun processNode(node listOfNodes)
+;;ako smo stigli do kraja liste znaci da taj cvor nije obradjen pre
+    (cond ((null listOfNodes) t)
+        ((equal node (car listOfNodes)) nil)
+        (t (processNode node (cdr listOfNodes)))
+    )
+)
+;; graph je state, trazenje po sirini sve dok ne nadje cvor koji ima stek
+(defun breadthFirst(graph startNode processed)
+    (cond ((null startNode) '())
+        ((> (countStack (caddr (findNode (car startNode) graph))) 0) (list (car startNode)))
+        (t (let* (
+                    (newProcessed (createProcessed processed startNode))
+                    (descendants (createDescendants startNode newProcessed graph))
+                    (newStartNode (append (cdr startNode) descendants))
+                    (path (breadthFirst graph newStartNode newProcessed)) ;;kreiramo putanju u kojoj ce biti svi cvorovi kroz koje se proslo
+        )
+            (cond ((null path) '())
+                ((checkIfNodeExists (car path) descendants) (cons (car startNode) path))
+                (t path)
+            )
+        ))
+    )
+)
+;; Kreira listu obradjenih cvorova
+(defun createProcessed(processed lista)
+    (append processed (list (car lista)))
+)
+;; Kreira listu suseda
+(defun createDescendants(lista processed graph)
+    (new-nodes (cadr (findNode (car lista) graph)) (append (cadr lista) processed))
+)
+;; Funkcija koja za svoje susede poziva breadthFirst i pravi listu puteva gde moze da se ide
+(defun findPathInNeighbours(state node)
+	(getPaths state (cadr (findNode node state)) node)
+)
+;; Za sve prosledjene cvorove poziva breadthFirst
+(defun getPaths(state nodes node)
+	(cond 
+		((null nodes) '())
+		(t (cons (breadthFirst state (list (car nodes)) (list node)) (getPaths state (cdr nodes) node) ))
+	)
+)
+;; Nalazi element sa najmanjom velicinom
+(defun findMinLength(lista minLength)
+	(cond 
+		((null lista) minLength)
+		((null (car lista)) (findMinLength (cdr lista) minLength) )
+		((> minLength (length (car lista))) (findMinLength (cdr lista) (length (car lista))))
+		(t (findMinLength (cdr lista) minLength))
+	)
+)
+;; Vraca listu elemenata sa najmanjom duzinom do tog trenutka
+;; (returningMinPath lista (findMinLength lista '100))
+(defun returningMinPath(listNearby minLength)
+	(cond 
+		((null listNearby) '())
+		((null (car listNearby)) (returningMinPath (cdr listNearby) minLength))
+		((> (length (car listNearby)) minLength) (returningMinPath (cdr listNearby) minLength))
+		((< (length (car listNearby)) minLength) (cons (car listNearby) (returningMinPath (cdr listNearby) (length (car listNearby))) ))
+		(t (cons (car listNearby) (returningMinPath (cdr listNearby) minLength))) 
+	)
+)
+;; Poziva funkciju koja proverava da li se end cvor nalazi u listi validnih koja se kreira u ovoj fji
+(defun checkIfExists(state start end)
+	(let* 
+		((lista (findPathInNeighbours state start)) 
+		(validList (returningMinPath lista (findMinLength lista '100)))
+		)
+		(checkNodeInValidList end validList)
+	)
+)
+;; Proverava da li je end cvor u listi validnih
+(defun checkNodeInValidList(node list)
+	(cond 
+		((null list) nil)
+		((equal node (caar list)) t)
+		(t (checkNodeInValidList node (cdr list)))
+	)
+)
+;; Proverava da li je potez validan
+(defun validateMove (state start endPoint stackHeight) 
+	;; da li su susedi
+	(if (checkIfNeighbours start endPoint state) 
+		;; ako jesu susedi da li susedi imaju stack
+		(if (checkIfNeighboursHaveStack (cadr (findNode start state)) state )
+			;; susedi su i susedi imaju stack
+			;; proverava da li je visina sa koje se pomera jednaka 0 jer u tom slucaju ne delimo stack
+			(if (equal stackHeight '0)
+				;; ako je 0 onda rezultujuci stack mora da ima vrednost manju od 0
+				(if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
+		                    (countStack (caddar (findNode endPoint state)))) '8 )
+		        		nil
+		    			t
+					)
+			
+				;; ako delimo stack onda proverava da li endPoint ima stack jednak 0
+		    	(if (equal (countStack (caddar (findNode endPoint state))) '0 ) 
+					;; ako ima vrati nil
+		    	    nil
+					;; da li je visina steka na koji se pomera visa od plocice sa koje se pomera
+					(if (< (countStack (caddar (findNode endPoint state))) stackHeight) 
+		    	    	nil
+						;; rezultujuci stack mora da ima manje od 8 plocica
+		    			(if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
+		    	                (countStack (caddar (findNode endPoint state)))) '8 )
+		    	    		nil
+		    				t
+						)
+					)
+				)
+			)
+			;; susedi su ali susedi nemaju stack
+		    (checkIfExists state start endPoint))
+		;; nisu susedi vrati nil
+		nil
+		)
+)
+;; Ukoliko je potez validan odigrava potez
+(defun makeMove (state startPoint endPoint stackHeight ) 
+	(cond 
+		((not (validateMove state startPoint endPoint stackHeight)) nil)
+		;; odigraj potez
+		(t 
+			(let* 
+				(
+					(newState (changeElement state startPoint (combineStacks '("." "." "." "." "." "." "." "." ".") (getStackTo (caddr (findNode startPoint state)) stackHeight )) ) )
+					(newState2 (changeElement newState endPoint (combineStacks (caddr (findNode endPoint state)) (getStackFrom (caddr (findNode startPoint state)) stackHeight))))
+				)
+				newState2
+			)
+		)
+	)
+)
+;; (trace validateMove)
+;; Vraca stack pocevsi od elementa n pa do prve tacke
+(defun getStackFrom(stack n)
+	(cond 
+		((null stack) '())
+		((equal n '0) 
+			(if (equal (car stack) ".")
+				'()
+				(cons (car stack) (getStackFrom (cdr stack) n))
+			)
+		)
+		(t (getStackFrom (cdr stack) (- n 1)))
+	)
+)
+;; Vraca stack pocevsi od 0 do n
+(defun getStackTo(stack n)
+	(cond 
+		((<= n '0) '())
+		(t (cons (car stack) (getStackTo (cdr stack) (- n 1))))
+	)
+)
+;; Na stack1 dodaje stack2
+(defun combineStacks(stack1 stack2)
+	(cond 
+		((null stack2) stack1)
+		((equal (car stack1) ".") (cons (car stack2) (combineStacks (cdr stack1) (cdr stack2))))
+		(t (cons (car stack1) (combineStacks (cdr stack1) stack2)))
+	)
+)
+;; Menja stack prosledjenom elementu
+(defun changeElement(state elem stack)
+	(cond 
+		((null state) '())
+		((equal (caar state) elem) (cons (append (append (list (caar state)) (list (cadar state))) (list stack)) (cdr state) ))
+		(t (cons (car state) (changeElement (cdr state) elem stack)))
+	)
+)
+;; (trace breadthFirst)
 (drawTable)
