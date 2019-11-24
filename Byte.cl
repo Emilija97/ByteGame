@@ -1,4 +1,4 @@
-(defun drawTable() 
+(defun drawTable()
 ;;  (print state)
  (initializeTable))
 (defun initializeTable() 
@@ -17,11 +17,11 @@
     ;; (print (checkIfNodeExists '(A 1) '((B 2) (C 3))))
     ;; (print (checkIfNeighboursHaveStack '((B 2)) state))
     ;; (print (checkIfNeighbours '(A 1) '(B 2) state))
-    ;;(print (breadthFirst state '((B 2)) '()))
-    (setq state (makeMove state '(B 2) '(C 1) '0))
-	(draw sizeOfTable state)
-	(setq state (makeMove state '(C 1) '(D 2) '0))
-	(draw sizeOfTable state)
+    ;; (print (breadthFirst state '((B 2)) '()))
+     (setq state (makeMove state '(B 2) '(C 1) '0))
+     (draw sizeOfTable state)
+     (setq state (makeMove state '(C 1) '(D 2) '0))
+     (draw sizeOfTable state)
     )
 )
 ;; Funkcija koja iscrtava tablu u zavisnosti od prosledjene velicine
@@ -367,7 +367,7 @@
 	)
 )
 ;; Poziva funkciju koja proverava da li se end cvor nalazi u listi validnih koja se kreira u ovoj fji
-(defun checkIfExists(state start end)
+(defun checkIfEndNodeExists(state start end)
 	(let* 
 		((lista (findPathInNeighbours state start)) 
 		(validList (returningMinPath lista (findMinLength lista '100)))
@@ -385,28 +385,27 @@
 )
 ;; Proverava da li je potez validan
 (defun validateMove (state start endPoint stackHeight) 
-	;; da li su susedi
+	;; proverava da li su cvorovi susedi
 	(if (checkIfNeighbours start endPoint state) 
-		;; ako jesu susedi da li susedi imaju stack
+		;; proverava da li susedi imaju stack
 		(if (checkIfNeighboursHaveStack (cadr (findNode start state)) state )
-			;; susedi su i susedi imaju stack
-			;; proverava da li je visina sa koje se pomera jednaka 0 jer u tom slucaju ne delimo stack
+			;; susedi imaju stack->
+			;; proverava da li je visina stacka sa kojeg se pomera jednaka 0, tada se ne deli stack
 			(if (equal stackHeight '0)
-				;; ako je 0 onda rezultujuci stack mora da ima vrednost manju od 0
+				;; ukoliko je 0 onda rezultujuci stack mora da ima vrednost manju od 0
 				(if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
 		                    (countStack (caddar (findNode endPoint state)))) '8 )
 		        		nil
 		    			t
 					)
-			
 				;; ako delimo stack onda proverava da li endPoint ima stack jednak 0
 		    	(if (equal (countStack (caddar (findNode endPoint state))) '0 ) 
-					;; ako ima vrati nil
+					;; vraca nil ako ima
 		    	    nil
 					;; da li je visina steka na koji se pomera visa od plocice sa koje se pomera
 					(if (< (countStack (caddar (findNode endPoint state))) stackHeight) 
 		    	    	nil
-						;; rezultujuci stack mora da ima manje od 8 plocica
+						;; rezultujuci stack ne sme da ima vise od 8 plocica
 		    			(if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
 		    	                (countStack (caddar (findNode endPoint state)))) '8 )
 		    	    		nil
@@ -416,7 +415,7 @@
 				)
 			)
 			;; susedi su ali susedi nemaju stack
-		    (checkIfExists state start endPoint))
+		    (checkIfEndNoteExists state start endPoint))
 		;; nisu susedi vrati nil
 		nil
 		)
@@ -429,8 +428,8 @@
 		(t 
 			(let* 
 				(
-					(newState (changeElement state startPoint (combineStacks '("." "." "." "." "." "." "." "." ".") (getStackTo (caddr (findNode startPoint state)) stackHeight )) ) )
-					(newState2 (changeElement newState endPoint (combineStacks (caddr (findNode endPoint state)) (getStackFrom (caddr (findNode startPoint state)) stackHeight))))
+					(newState (changeStackOfElement state startPoint (mergeStacks '("." "." "." "." "." "." "." "." ".") (getStackTo (caddr (findNode startPoint state)) stackHeight )) ) )
+					(newState2 (changeStackOfElement newState endPoint (mergeStacks (caddr (findNode endPoint state)) (getStackStartingFrom (caddr (findNode startPoint state)) stackHeight))))
 				)
 				newState2
 			)
@@ -438,20 +437,20 @@
 	)
 )
 ;; (trace validateMove)
-;; Vraca stack pocevsi od elementa n pa do prve tacke
-(defun getStackFrom(stack n)
+;; Vraca stack od elementa n pa do prve tacke
+(defun getStackStartingFrom(stack n)
 	(cond 
 		((null stack) '())
 		((equal n '0) 
 			(if (equal (car stack) ".")
 				'()
-				(cons (car stack) (getStackFrom (cdr stack) n))
+				(cons (car stack) (getStackStartingFrom (cdr stack) n))
 			)
 		)
-		(t (getStackFrom (cdr stack) (- n 1)))
+		(t (getStackStartingFrom (cdr stack) (- n 1)))
 	)
 )
-;; Vraca stack pocevsi od 0 do n
+;; Vraca stack od 0 do n
 (defun getStackTo(stack n)
 	(cond 
 		((<= n '0) '())
@@ -459,20 +458,20 @@
 	)
 )
 ;; Na stack1 dodaje stack2
-(defun combineStacks(stack1 stack2)
+(defun mergeStacks(stack1 stack2)
 	(cond 
 		((null stack2) stack1)
-		((equal (car stack1) ".") (cons (car stack2) (combineStacks (cdr stack1) (cdr stack2))))
-		(t (cons (car stack1) (combineStacks (cdr stack1) stack2)))
+		((equal (car stack1) ".") (cons (car stack2) (mergeStacks (cdr stack1) (cdr stack2))))
+		(t (cons (car stack1) (mergeStacks (cdr stack1) stack2)))
 	)
 )
 ;; Menja stack prosledjenom elementu
-(defun changeElement(state elem stack)
+(defun changeStackOfElement(state elem stack)
 	(cond 
 		((null state) '())
 		((equal (caar state) elem) (cons (append (append (list (caar state)) (list (cadar state))) (list stack)) (cdr state) ))
-		(t (cons (car state) (changeElement (cdr state) elem stack)))
+		(t (cons (car state) (changeStackOfElement (cdr state) elem stack)))
 	)
 )
 ;; (trace breadthFirst)
-(drawTable)
+(drawTable)8
