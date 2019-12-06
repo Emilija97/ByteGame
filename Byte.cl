@@ -8,9 +8,11 @@
     (modeGame (progn (print "Do you want to play human vs human or human vs computer, choose h or c: ") (read)))
     ;; (print modeGame)
     (state (chooseTable sizeOfTable))
-    (result '("X" "X" "O"))
     )
     (draw sizeOfTable state)
+    (setq firstPlayerTurn '1)
+    ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 2))
+    ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 1))
     ;; (print (checkEnd sizeOfTable result))
     ;; (print (countStack '("X" "O" "." "." "." "." "." "." ".")))
     ;; (print (findNode '(A 1) state))
@@ -18,9 +20,22 @@
     ;; (print (checkIfNeighboursHaveStack '((B 2)) state))
     ;; (print (checkIfNeighbours '(A 1) '(B 2) state))
     ;; (print (breadthFirst state '((B 2)) '()))
-     (setq state (makeMove state '(B 2) '(C 1) '0))
+    ;; (loop while
+    ;; (setq firstPlayerTurn '1)
+    (loop 
+     (setq move (progn (print "Play the move: ") (read)))
+     (setq state (makeMove state (car move) (cadr move) (caddr move)))
      (draw sizeOfTable state)
-     (setq state (makeMove state '(C 1) '(D 2) '0))
+     (setq firstPlayerTurn (1+ firstPlayerTurn))
+    )
+    ;; (setq state (makeMove state '(B 2) '(C 1) '0))
+    ;; (draw sizeOfTable state)
+    ;; (setq state (makeMove state '(C 1) '(D 2) '0))
+    ;; (setq state (makeMove state '(C 3) '(D 4) '0))
+    ;; (setq state (makeMove state '(D 4) '(E 3) '0))
+    ;; (setq state (makeMove state '(F 4) '(E 3) '0))
+    ;; (draw sizeOfTable state)
+    ;; (setq state (makeMove state '(D 2) '(E 3) '2))
      (draw sizeOfTable state)
     )
 )
@@ -401,42 +416,58 @@
 				;; ako delimo stack onda proverava da li endPoint ima stack jednak 0
 		    	(if (equal (countStack (caddar (findNode endPoint state))) '0 ) 
 					;; vraca nil ako ima
-		    	    nil
+		    	   nil
 					;; da li je visina steka na koji se pomera visa od plocice sa koje se pomera
-					(if (< (countStack (caddar (findNode endPoint state))) stackHeight) 
-		    	    	nil
-						;; rezultujuci stack ne sme da ima vise od 8 plocica
-		    			(if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
-		    	                (countStack (caddar (findNode endPoint state)))) '8 )
-		    	    		nil
-		    				t
-						)
-					)
+                        (if (< (countStack (caddar (findNode endPoint state))) stackHeight) 
+                            nil
+                            ;; rezultujuci stack ne sme da ima vise od 8 plocica
+                            (if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
+                                    (countStack (caddar (findNode endPoint state)))) '8 )
+                                nil
+                                t
+                            )
+                        )
+                    ;; nije ispunjen taj uslov za deobu steka
+                    ;; nil
+                    ;; )
 				)
-			)
+            )
 			;; susedi su ali susedi nemaju stack
-		    (checkIfEndNoteExists state start endPoint))
+		    (checkIfEndNodeExists state start endPoint))
 		;; nisu susedi vrati nil
 		nil
 		)
 )
+;; Nudi novi potez ukoliko je odigran pogresan
+(defun offerNewMove(state)
+    (print "Your move was invalid, please enter a new one: ")
+    (setq move (read))
+    (setq state (makeMove state (car move) (cadr move) (caddr move)))
+)
+;; Proverava da li stack koji pokusavamo da pomerimo pocinje odredjenim znakom("X" ili "O")
+(defun checkIfStackStartsWith (stack height)
+    (if (equal (mod firstPlayerTurn 2) 1) (if (equal (nth height stack) "X") t nil) (if (equal (nth height stack) "O") t nil))
+    
+)
+;; (print (checkIfStackStartsWith (caddr (findNode startPoint state)) 2)
 ;; Ukoliko je potez validan odigrava potez
 (defun makeMove (state startPoint endPoint stackHeight ) 
-	(cond 
-		((not (validateMove state startPoint endPoint stackHeight)) nil)
-		;; odigraj potez
+	(cond
+        ;; Ako nismo na potezu ne mozemo da pomerimo protivnicki stack
+        ((not (checkIfStackStartsWith (caddr (findNode startPoint state)) stackHeight)) (offerNewMove state)) 
+		((not (validateMove state startPoint endPoint stackHeight)) (offerNewMove state))
 		(t 
 			(let* 
 				(
 					(newState (changeStackOfElement state startPoint (mergeStacks '("." "." "." "." "." "." "." "." ".") (getStackTo (caddr (findNode startPoint state)) stackHeight )) ) )
 					(newState2 (changeStackOfElement newState endPoint (mergeStacks (caddr (findNode endPoint state)) (getStackStartingFrom (caddr (findNode startPoint state)) stackHeight))))
-				)
+                )
 				newState2
 			)
 		)
 	)
 )
-;; (trace validateMove)
+(trace checkIfStackStartsWith)
 ;; Vraca stack od elementa n pa do prve tacke
 (defun getStackStartingFrom(stack n)
 	(cond 
@@ -474,4 +505,4 @@
 	)
 )
 ;; (trace breadthFirst)
-(drawTable)8
+(drawTable)
