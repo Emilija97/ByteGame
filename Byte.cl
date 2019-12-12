@@ -127,6 +127,7 @@
         )
     )
 )
+;; prikaz table uz pomoc funkcije format(omogucen odabir moda(8x8 ili 10x10)
 (defun drawUniversalFields(state sizeOfTable)
     (progn
         (cond 
@@ -155,6 +156,7 @@
     ))
     )
 )
+;; Iscrtava vrste za 8x8
 (defun drawEightRow(letter startPosition type size state)
     (cond ((<= (mod type 2) '0) 
        (progn 
@@ -169,6 +171,7 @@
        ))
     )
 )
+;; Iscrtava vrste za 10x10
 (defun drawTenRow(letter startPosition type size state)
     (cond ((<= (mod type 2) '0) 
        (progn 
@@ -183,6 +186,7 @@
        ))
     )
 )
+;; Popunjava vrste za 8x8
 (defun fillEightRow(startPosition size state formatText mode letter)
     (if (equal mode '2)(format t formatText
             (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
@@ -197,6 +201,7 @@
             (nth size (caddr (nth (+ 3 startPosition) state))) (nth (- size 1) (caddr (nth (+ 3 startPosition) state))) (nth (- size 2) (caddr (nth (+ 3 startPosition) state))) 
     ))
 )
+;; Popunjava vrste za 10x10
 (defun fillTenRow(startPosition size state formatText mode letter)
     (if (equal mode '2)(format t formatText
             (nth size (caddr (nth startPosition state))) (nth (- size 1) (caddr (nth startPosition state))) (nth (- size 2) (caddr (nth startPosition state))) 
