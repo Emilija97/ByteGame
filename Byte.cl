@@ -11,7 +11,9 @@
     )
     (print state)
     (draw sizeOfTable state)
-    (setq firstPlayerTurn '1)
+    ;; (setq firstPlayerTurn '1)
+    ;; B-black/W-white turn
+    (setq BW T)
     ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 2))
     ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 1))
     ;; (print (checkEnd sizeOfTable result))
@@ -21,13 +23,19 @@
     ;; (print (checkIfNeighboursHaveStack '((B 2)) state))
     ;; (print (checkIfNeighbours '(A 1) '(B 2) state))
     ;; (print (breadthFirst state '((B 2)) '()))
+    ;; (print (findPathInNeighbours state '(E 5)))
+    ;; (print (breadthFirst state '((E 5)) '()))
+    ;; (print (new-states state state T))
+    ;; (print (caaddr (car state)))
     ;; (loop while
     ;; (setq firstPlayerTurn '1)
     (loop 
      (setq move (progn (print "Play the move: ") (read)))
      (setq state (makeMove state (car move) (cadr move) (caddr move)))
      (draw sizeOfTable state)
-     (setq firstPlayerTurn (1+ firstPlayerTurn))
+    ;;  (setq firstPlayerTurn (1+ firstPlayerTurn))
+     (setq BW (not BW))
+     ;;(print state)
     )
     ;; (setq state (makeMove state '(B 2) '(C 1) '0))
     ;; (draw sizeOfTable state)
@@ -397,7 +405,7 @@
                     ;; )
 				)
             )
-			;; susedi su ali susedi nemaju stack
+			;; susedi su, ali susedi nemaju stack
 		    (checkIfEndNodeExists state start endPoint))
 		;; nisu susedi vrati nil
 		nil
@@ -411,7 +419,7 @@
 )
 ;; Proverava da li stack koji pokusavamo da pomerimo pocinje odredjenim znakom("X" ili "O")
 (defun checkIfStackStartsWith (stack height)
-    (if (equal (mod firstPlayerTurn 2) 1) (if (equal (nth height stack) "X") t nil) (if (equal (nth height stack) "O") t nil))
+    (if BW (if (equal (nth height stack) "X") t nil) (if (equal (nth height stack) "O") t nil))
     
 )
 ;; (print (checkIfStackStartsWith (caddr (findNode startPoint state)) 2)
@@ -469,5 +477,56 @@
 		(t (cons (car state) (changeStackOfElement (cdr state) elem stack)))
 	)
 )
+;; moveState- za svaki cvor trazi susede
+(defun new-states (state moveState BW)
+    (if BW 
+        (cond ((null moveState) '())
+              ((equal (caaddr (car moveState)) "X") (print (findPathInNeighbours state (caar moveState))))
+              (t (new-states state (cdr moveState) BW))
+        )
+    )
+    ;; (case moveState
+    ;; (())
+    ;; (t '()))
+    ;; (print (findPathInNeighbours state (caar moveState)))
+)
+;;
+(defun evaluateState (moveState)
+    (case moveState
+    (())
+    (t 0))
+)
+;;
+(defun max-state (lsv)
+    (max-state-i (cdr lsv)(car lsv))
+)
+;;
+(defun max-state-i (lsv state-value)
+    (cond ((null lsv) state-value)
+    ((>(cadar lsv)(cadr state-value))
+        (max-state-i (cdr lsv)(car lsv)))
+        (t (max-state-i (cdr lsv) state-value)))
+)
+;;
+(defun min-state (lsv)
+    (min-state-i (cdr lsv)(car lsv))
+)
+;;
+(defun min-state-i (lsv state-value)
+    (cond ((null lsv) state-value)
+    ((>(cadar lsv)(cadr state-value))
+        (min-state-i (cdr lsv)(car lsv)))
+        (t (min-state-i (cdr lsv) state-value)))
+)
 ;; (trace breadthFirst)
+;; Faza 3 - Minmax algoritam sa alfa-beta odsecanjem
+;; BW prosledjujemo da bismo vrsili proveru koji potez se igra da li max-state ili min-state
+(defun minimax(state depth alpha beta BW)
+    (let ((listMoves (new-states state state BW))
+        (f (if BW 'max-state 'min-state)))
+        (cond ((or (zerop depth) (null listMoves)) (list state (evaluateState state)))
+              (t (apply f (list (mapcar (lambda (x) (minimax x (1- depth) (not BW))) listMoves))))
+        )
+    )
+)
 (drawTable)
