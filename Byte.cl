@@ -610,14 +610,14 @@
 ;; proverava da li moze sa neke visine steka da odigra
 (defun createDifferentMoves (state startPoint endPoint)
     (let* ((nodeStack (caddr (findNode startPoint state))))
-           (createListWithHeights state startPoint endPoint (countStack nodeStack))
+           (createListWithHeights state startPoint endPoint (countStack nodeStack) 0)
     )
 )
 ;; 
-(defun createListWithHeights(state startPoint endPoint nodeStack)
-    (cond ((equal nodeStack 0) nil)
-            (t (cons (makeMove state startPoint endPoint (- nodeStack 1) T) 
-                        (createListWithHeights state startPoint endPoint (1- nodeStack))))
+(defun createListWithHeights(state startPoint endPoint nodeStack val)
+    (cond ((equal val nodeStack) nil)
+            (t (cons (makeMove state startPoint endPoint val T) 
+                        (createListWithHeights state startPoint endPoint nodeStack (1+  val))))
     )
 )
 ;; 
@@ -670,7 +670,7 @@
     (let ((node (car (findAppropriateNodes state BW))))
         (let ((stacks (findNode node state)))
             (+ (random 100)(countStack (caddr stacks)))
-            ;;(random 100)
+            ;; (random 100)
         ) 
     )
 )
