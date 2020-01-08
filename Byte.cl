@@ -10,12 +10,6 @@
     (state (chooseTable sizeOfTable))
     )
     (playGame state sizeOfTable modeGame)
-    ;; (print state)
-    ;; (draw sizeOfTable state)
-    ;; (setq bott T)
-    ;; (setq BW T)
-    ;; (setq result '())
-    ;; (print result)
     ;; (print (checkEnd sizeOfTable result))
     ;; (print (minimax state 1 alpha beta BW sizeOfTable '(".")))
     ;; (print (findAppropriateNodes state BW))
@@ -114,23 +108,9 @@
     )
     (print bott)
     (if bott
-    (loop 
-        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
-        (setq result (checkFullStack state result))
-        (setq state (clearFullStack state))
-        (draw sizeOfTable state)
-        (setq BW (not BW))
-        (setq bott (not bott))
-        (if (checkEnd sizeOfTable result) (print "Pobednik je: " (terpri) result))
-        (setq move (progn (print "Play the move: ") (read)))
-        (setq state (makeMove state (car move) (cadr move) (caddr move) bott))
-        (setq BW (not BW))
-        (setq bott (not bott))
-        (setq result (checkFullStack state result))
-        (setq state (clearFullStack state))
-    )
+        (playBot state sizeOfTable)
     (loop
-        (if (checkEnd sizeOfTable result) (print "Pobednik je: " (terpri) result))
+        (if (checkEnd sizeOfTable result) (print "Pobednik je: " result))
         (setq move (progn (print "Play the move: ") (read)))
         (setq state (makeMove state (car move) (cadr move) (caddr move) bott))
         (setq result (checkFullStack state result))
@@ -138,7 +118,8 @@
         (draw sizeOfTable state)
         (setq BW (not BW))
         (setq bott (not bott))
-        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
+        (setq state (car (minimax state 3 alpha beta BW sizeOfTable result)))
+        (draw sizeOfTable state)
         (setq BW (not BW))
         (setq bott (not bott))
         (setq result (checkFullStack state result))
@@ -146,13 +127,31 @@
     )
     )
 )
+(defun playBot(state sizeOfTable)
+    (cond 
+        ((checkEnd sizeOfTable result) (progn (print "Pobednik je: ") (print  result))) 
+        (t (progn (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
+        (setq result (checkFullStack state result))
+        (setq state (clearFullStack state))
+        (draw sizeOfTable state)
+        (setq BW (not BW))
+        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
+        (setq BW (not BW))
+        (setq result (checkFullStack state result))
+        (setq state (clearFullStack state))
+        (playBot state sizeOfTable)
+        )))
+)
 ;; 
 (defun createClearList(state BW)
-         (loop for s in (makeAllMoves state BW) collect
-                (loop for x in s
-                if (not (null x))
-                collect x
-)))
+    (let* ((nodes (makeAllMoves state BW)))
+                (loop for s in nodes collect
+                    (loop for x in s
+                        if (not (null x))
+                        collect x
+                ))
+    )
+)
 ;; Funkcija koja iscrtava tablu u zavisnosti find prosledjene velicine
 (defun draw(sizeOfTable state)
    (drawUniversalFields state sizeOfTable)
@@ -344,13 +343,13 @@
                                (t nil ))))
     ))
 ;; Racuna broj O u steku ili X
-(defun countO (result) (if (null result) '0 
-                           (if (equal (car result) "O") (+ 1 (countO (cdr result))) 
-                             (countO (cdr result)))))
+(defun countO (stack) (if (null stack) '0 
+                           (if (equal (car stack) "O") (+ 1 (countO (cdr stack))) 
+                             (countO (cdr stack)))))
 
-(defun countX (result) (if (null result) '0 
-                           (if (equal (car result) "X") (+ 1 (countX (cdr result))) 
-                             (countX (cdr result)))))
+(defun countX (stack) (if (null stack) '0 
+                           (if (equal (car stack) "X") (+ 1 (countX (cdr stack))) 
+                             (countX (cdr stack)))))
 ;;Izracunava broj elemenata u steku 
 (defun countStack(stack) (if (null stack) '0 
                              (+ (countO stack) (countX stack))
@@ -520,21 +519,21 @@
                 ;; proverava da li je visina stacka sa kojeg se pomera jednaka 0, tada se ne deli stack
                 (if (equal stackHeight '0)
                     ;; ukoliko je 0 onda rezultujuci stack mora da ima vrednost manju od 0
-                    (if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
-                                (countStack (caddar (findNode endPoint state)))) '8 )
-                            nil
-                            t
-                        )
+                    (if (> (+ (- (countStack (caddr (findNode start state))) stackHeight)
+                                (countStack (caddr (findNode endPoint state)))) '8 )
+                                nil
+                                t
+                    )
                     ;; ako delimo stack onda proverava da li endPoint ima stack jednak 0
-                    (if (equal (countStack (caddar (findNode endPoint state))) '0 ) 
+                    (if (equal (countStack (caddr (findNode endPoint state))) '0 ) 
                         ;; vraca nil ako ima
                     nil
                         ;; da li je visina steka na koji se pomera visa od plocice sa koje se pomera
-                            (if (< (countStack (caddar (findNode endPoint state))) stackHeight) 
+                            (if (< (countStack (caddr (findNode endPoint state))) stackHeight) 
                                 nil
                                 ;; rezultujuci stack ne sme da ima vise od 8 plocica
-                                (if (> (+ (- (countStack (caddar (findNode start state))) stackHeight)
-                                        (countStack (caddar (findNode endPoint state)))) '8 )
+                                (if (> (+ (- (countStack (caddr (findNode start state))) stackHeight)
+                                        (countStack (caddr (findNode endPoint state)))) '8 )
                                           nil
                                     t
                                 )
@@ -568,7 +567,7 @@
 (defun makeMove (state startPoint endPoint stackHeight bot) 
     (cond
         ;; Ako nismo na potezu ne mozemo da pomerimo protivnicki stack
-        ((not (checkIfStackStartsWith (caddr (findNode startPoint state)) stackHeight)) (offerNewMove state)) 
+        ((not (checkIfStackStartsWith (caddr (findNode startPoint state)) stackHeight))  (if (not bot) (offerNewMove state))) 
         ((if (not (validateMove state startPoint endPoint stackHeight))
             ;; ako nije validan potez onda proveravamo da li igra bot da ne bismo uvek nudili novi potez, potrebna su nam sva stanja
             (if (not bot) (offerNewMove state))
@@ -594,13 +593,35 @@
 ;; Za svaki cvor koji vrati findAppropriateNodes da se pozove makeMove gde je startPoint iz findAppropriate, a endPoint iz findNeighbours
 (defun makeAllMoves (state BW)
      (let* ((nodes (findAppropriateNodes state BW)))
-        (loop for x in nodes collect
-                (loop for y in (findNeighbours x state)
-                        collect (makeMove state x y '0 T)
+        (cond ((null nodes) nil)
+              (t(loop for x in nodes collect
+                    (goodNeighbour state x (findNeighbours x state))
                 )
+              )
         )
     )
 )
+;; proverava da li moze sa neke visine steka da odigra
+(defun createDifferentMoves (state startPoint endPoint)
+    (let* ((nodeStack (caddr (findNode startPoint state))))
+           (createListWithHeights state startPoint endPoint (countStack nodeStack))
+    )
+)
+;; 
+(defun createListWithHeights(state startPoint endPoint nodeStack)
+    (cond ((equal nodeStack 0) nil)
+            (t (cons (makeMove state startPoint endPoint (- nodeStack 1) T) 
+                        (createListWithHeights state startPoint endPoint (1- nodeStack))))
+    )
+)
+;; 
+(defun goodNeighbour(state startPoint goodNodes)
+    (cond ((null goodNodes) nil)
+            (t (append (createDifferentMoves state startPoint (car goodNodes)) 
+                            (goodNeighbour state startPoint (cdr goodNodes))))
+    )
+)
+;; (trace makeMove)
 ;; Vraca stack od elementa n pa do prve tacke
 (defun getStackStartingFrom(stack n)
     (cond 
@@ -660,7 +681,7 @@
                 (loop for s in listOfMovesState do
                  (loop for x in s do
                     (setq novoalpha (min-value x alpha beta (1- depth) (not BW) sizeOfTable))
-                    (setq maxalpha (if (< (cadr maxalpha) (cadr novoalpha)) novoalpha maxalpha))
+                    (setq maxalpha (if (< (cadr maxalpha) (cadr novoalpha)) (list x (cadr novoalpha)) maxalpha))
                     (if (<= beta (cadr maxalpha)) (return-from max-value (list state beta)) maxalpha)
                 ))
                 (return-from max-value maxalpha)
@@ -672,11 +693,12 @@
 (defun min-value (state alpha beta depth BW sizeOfTable) ;;graph parametar
     (cond 
         ((zerop depth) (list state (evaluateState state BW)))
-        (t  (let* ((minbeta (list state beta)))
-                (loop for s in (createClearList state BW) do
+        (t  (let* ((minbeta (list state beta))
+                    (listOfMovesState (createClearList state BW)))
+                (loop for s in listOfMovesState do
                  (loop for x in s do
                     (setq novobeta (max-value x alpha beta (1- depth) (not BW) sizeOfTable))
-                    (setq minbeta (if (> (cadr minbeta) (cadr novobeta)) novobeta minbeta))
+                    (setq minbeta (if (> (cadr minbeta) (cadr novobeta)) (list x (cadr novobeta)) minbeta))
                     (if (>= alpha (cadr minbeta)) (return-from min-value (list state alpha)) minbeta)
                 ))
                 (return-from min-value minbeta)
@@ -690,8 +712,10 @@
               (t (if BW (max-value state alpha beta depth BW sizeOfTable) (min-value state alpha beta depth BW sizeOfTable)))
         )
 )
+;; (trace validateMove)
 ;; (trace evaluateState)
-(trace minimax)
+;; (trace minimax)
 ;; (trace max-value)
 ;; (trace min-value)
+;; (trace createClearList)
 (drawTable)
