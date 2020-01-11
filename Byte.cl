@@ -5,151 +5,87 @@
     (let* ((state '())
     (sizeOfTable (progn (print "Do you want to play with table 8 or 10: ") (read)))
     ;; (print sizeOfTable)
-    (modeGame (progn (print "Who do you want to play first, choose h or c: ") (read)))
+    (modeGame (progn (print "Do you want human vs computer or computer vs computer, choose h or c: ") (read)))
+    (player (if (equal modeGame 'h) (progn (print "Do you want human to play first or bot plays first, choose h or b: ") (read))))
     ;; (print modeGame)
     (state (chooseTable sizeOfTable))
     )
-    (playGame state sizeOfTable modeGame)
-    ;; (print state)
-    ;; (draw sizeOfTable state)
-    ;; (setq bott T)
-    ;; (setq BW T)
-    ;; (setq result '())
-    ;; (print result)
-    ;; (print (checkEnd sizeOfTable result))
-    ;; (print (minimax state 1 alpha beta BW sizeOfTable '(".")))
-    ;; (print (findAppropriateNodes state BW))
-    ;; (setq BW (not BW))
-    ;; (print (findAppropriateNodes state BW))
-    ;; (setq BW (not BW))
-    ;; (print (evaluateState state BW))
-    ;;(print (makeAllMoves state))
-    ;; (setq nodes (findNeighbours '(B 2) state))
-    ;; (print (makeMove state '(B 2)  'findAppropriateNodes () node) '0))
-    ;; (print (findNeighbours '(B 2) state))
-    ;; (loop 
-    ;;     for x in (findAppropriateNodes state BW)
-    ;;     append (loop for y in (findNeighbours x state)
-    ;;      do (print y))
-    ;;         ;;(print (findNeighbours x state))
-    ;;         ;; (let ((endNodes (findNeighbours x state))
-    ;;         ;;     ;; (loop for e in endNodes 
-    ;;         ;;     ;;     do (print e)
-    ;;         ;;     ;; )
-    ;;         ;;     (print endNodes)
-    ;;         ;;     )
-    ;;         ;; )
-    ;; )
-    ;; (print (loop for x downfrom 999 to 900
-    ;;   append (loop for y downfrom 999 to 900
-    ;;                collect (* x y))))
-    ;; (print (findPathInNeighbours state '(B 2)))
-    ;; (print (makeAllMoves state))
-    ;; (setq firstPlayerTurn '1)
-    ;; B-black/W-white turn
-    ;;(setq BW T)
-    ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 2))
-    ;; (print (checkIfStackStartsWith (caddr (findNode '(D 2) state)) 1))
-    ;; (print (checkEnd sizeOfTable result))
-    ;; (print (countStack '("X" "O" "." "." "." "." "." "." ".")))
-    ;; (print (findNode '(A 1) state))
-    ;; (print (checkIfNodeExists '(A 1) '((B 2) (C 3))))
-    ;; (print (checkIfNeighboursHaveStack '((B 2)) state))
-    ;; (print (checkIfNeighbours '(A 1) '(B 2) state))
-    ;; (print (breadthFirst state 'let*((B 2)) '()))
-    ;; (print (makeAllMoves state))
-    ;; (print (findNeighbours '(E 5) state))
-    ;; (print (findNeighbours '(E 5) state))
-    ;; (print (findAppropriateNodes state BW '()))
-    ;; (print (findPathInNeighbours state '(B 4)))
-    ;; (print (caar (findPathInNeighbours state '(B 4))))
-    ;; (print (caadr (findPathInNeighbours state '(B 4))))
-    ;; (print (caaddr (findPathInNeighbours state '(B 4))))
-    ;; (print (caaddr (cdr (findPathInNeighbours state '(B 4)))))
-    ;; (print (breadthFirst state '((E 5)) '()))
-    ;; (print (new-states state state T))
-    ;; (print (caaddr (car state)))
-    ;; (loop while
-    ;; (setq firstPlayerTurn '1)
-    ;; (loop 
-    ;;  (setq state (car (minimax state 2 alpha beta BW sizeOfTable result)))
-    ;;     (setq result (checkFullStack state result))
-    ;;     (setq state (clearFullStack state))
-    ;;     ;; (print (makeAllMoves state))
-    ;;     ;; (draw sizeOfTable state)
-    ;;     ;; (setq BW (not BW))
-    ;;     ;; (setq bott (not bott))
-    ;;     ;; (setq state (max-value state alpha beta '2 BW sizeOfTable))
-    ;;     (draw sizeOfTable state)
-    ;;     (setq BW (not BW))
-    ;;     (setq bott (not bott))
-    ;;     (setq move (progn (print "Play the move: ") (read)))
-    ;;     (setq state (makeMove state (car move) (cadr move) (caddr move) bott))
-    ;;     ;; (draw sizeOfTable state)
-    ;;     (setq BW (not BW))
-    ;;     (setq bott (not bott))
-    ;;     (setq result (checkFullStack state result))
-    ;;     (setq state (clearFullStack state))
-    ;;     (print result)
-    ;;     ;;(print state)
-    ;; )
-    ;; (setq state (makeMove state '(B 2) '(C 1) '0))
-    ;; (draw sizeOfTable state)
-    ;; (setq state (makeMove state '(C 1) '(D 2) '0))
-    ;; (setq state (makeMove state '(C 3) '(D 4) '0))
-    ;; (setq state (makeMove state '(D 4) '(E 3) '0))
-    ;; (setq state (makeMove state '(F 4) '(E 3) '0))
-    ;; (draw sizeOfTable state)
-    ;; (setq state (makeMove state '(D 2) '(E 3) '2))
-    ;;  (draw sizeOfTable state)
+    (playGame state sizeOfTable modeGame player)
     )
 )
-(defun playGame(state sizeOfTable modeGame)
+;;funkcija za pocetak igre
+(defun playGame(state sizeOfTable modeGame player)
     (draw sizeOfTable state)
-    (setq BW T)
     (setq result '())
     (if (equal modeGame 'c)
         (setq bott T)
         (setq bott nil)
     )
-    (print bott)
+    (setq BW T)
     (if bott
         (playBot state sizeOfTable)
-    (loop
-        (if (checkEnd sizeOfTable result) (print "Pobednik je: " result))
+    (if (equal player 'h)
+        (playHumanFirst state sizeOfTable)
+        (playBotFirst state sizeOfTable)
+    )
+    )
+)
+;; omogucava igru covek pa bot
+(defun playHumanFirst (state sizeOfTable)
+    (cond 
+        ((checkEnd sizeOfTable result) (progn (print "Pobednik je: ") (print  result))) 
+        (t (progn 
         (setq move (progn (print "Play the move: ") (read)))
         (setq state (makeMove state (car move) (cadr move) (caddr move) bott))
         (setq result (checkFullStack state result))
         (setq state (clearFullStack state))
         (draw sizeOfTable state)
         (setq BW (not BW))
-        (setq bott (not bott))
-        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
-        (draw sizeOfTable state)
+        (setq state (car (minimax state 3 alpha beta BW sizeOfTable result)))
         (setq BW (not BW))
-        (setq bott (not bott))
         (setq result (checkFullStack state result))
         (setq state (clearFullStack state))
-    )
-    )
+        (draw sizeOfTable state)
+        (playHumanFirst state sizeOfTable)
+        )))
 )
+;; omogucava igru bot pa covek
+(defun playBotFirst (state sizeOfTable)
+    (cond 
+        ((checkEnd sizeOfTable result) (progn (print "Pobednik je: ") (print  result))) 
+        (t (progn 
+        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
+        (setq BW (not BW))
+        (setq result (checkFullStack state result))
+        (setq state (clearFullStack state))
+        (draw sizeOfTable state)
+        (setq move (progn (print "Play the move: ") (read)))
+        (setq state (makeMove state (car move) (cadr move) (caddr move) bott))
+        (setq result (checkFullStack state result))
+        (setq state (clearFullStack state))
+        (draw sizeOfTable state)
+        (setq BW (not BW))
+        (playBotFirst state sizeOfTable)
+        )))
+)
+;; funkcija za igru bota(minimax)
 (defun playBot(state sizeOfTable)
     (cond 
         ((checkEnd sizeOfTable result) (progn (print "Pobednik je: ") (print  result))) 
-        (t (progn (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
+        (t (progn (setq state (car (minimax state 2 alpha beta BW sizeOfTable result)))
         (setq result (checkFullStack state result))
         (setq state (clearFullStack state))
         (draw sizeOfTable state)
         (setq BW (not BW))
-        (setq state (car (minimax state 1 alpha beta BW sizeOfTable result)))
-        (draw sizeOfTable state)
+        (setq state (car (minimax state 2 alpha beta BW sizeOfTable result)))
         (setq BW (not BW))
         (setq result (checkFullStack state result))
         (setq state (clearFullStack state))
+        (draw sizeOfTable state)
         (playBot state sizeOfTable)
         )))
 )
-;; 
+;; funkcija za izbacivanje nevazecih poteza iz liste mogucih poteza
 (defun createClearList(state BW)
     (let* ((nodes (makeAllMoves state BW)))
                 (loop for s in nodes collect
@@ -159,14 +95,13 @@
                 ))
     )
 )
-;; Funkcija koja iscrtava tablu u zavisnosti find prosledjene velicine
+;; inicijalizacija koja odredjuje koja ce tabela biti kreirana 8x8 ili 10x10
+(defun chooseTable(sizeOfTable)
+    (fillTable sizeOfTable 1 1)
+)
+;; funkcija koja iscrtava tablu u zavisnosti find prosledjene velicine
 (defun draw(sizeOfTable state)
    (drawUniversalFields state sizeOfTable)
-)
-;; Inicijalizacija koja odredjuje koja ce tabela biti kreirana 8x8 ili 10x10
-(defun chooseTable(sizeOfTable)
-    ;; (if (equal sizeOfTable '8) (fillEight) (fillTen))
-    (fillTable sizeOfTable 1 1)
 )
 ;; kreiramo fju koja menja broj u slovo
 (defun numberToLetter(number)
@@ -202,12 +137,9 @@
             (if (and (<= (1+ row) n) (> (1- column) 0)) (push (createList (1+ row) (1- column)) temp))
             (if (and (<= (1+ row) n) (<= (1+ column) n)) (push (createList (1+ row) (1+ column)) temp))
         )
-    ;; lista
-    ;; (print temp)
     temp
     )
 )
-;; (print (createNeighbourList 8 1 7))
 ;; pomocna funkcija za kreiranje cvora suseda
 (defun createList(row column)
     (list (numberToLetter row) column)
@@ -233,7 +165,7 @@
             ((> row n) '())
             ((equal (mod row 2) 0) 
                 (cond 
-                    ;; ((equal column 1) (fillTable n row (1+ column))) ;;jer kolona krece od 2 za parnu vrstu
+                    ;;jer kolona krece od 2 za parnu vrstu
                     ((<= (+ column 2) (+ n 2)) (cons (createNode row column n) (fillTable n row (+ column 2))))
                     (t (fillTable n (1+ row) 1))
                 )
@@ -349,11 +281,11 @@
                                ((equal (countX result) 3) t ) 
                                (t nil ))))
     ))
-;; Racuna broj O u steku ili X
+;; Racuna broj O u steku
 (defun countO (stack) (if (null stack) '0 
                            (if (equal (car stack) "O") (+ 1 (countO (cdr stack))) 
                              (countO (cdr stack)))))
-
+;; Racuna broj X u steku
 (defun countX (stack) (if (null stack) '0 
                            (if (equal (car stack) "X") (+ 1 (countX (cdr stack))) 
                              (countX (cdr stack)))))
@@ -438,7 +370,8 @@
                     (newProcessed (createProcessed processed startNode))
                     (descendants (createDescendants startNode newProcessed graph))
                     (newStartNode (append (cdr startNode) descendants))
-                    (path (breadthFirst graph newStartNode newProcessed)) ;;kreiramo putanju u kojoj ce biti svi cvorovi kroz koje se proslo
+                    ;;kreiramo putanju u kojoj ce biti svi cvorovi kroz koje se proslo
+                    (path (breadthFirst graph newStartNode newProcessed))
         )
             (cond ((null path) '())
                 ((checkIfNodeExists (car path) descendants) (cons (car startNode) path))
@@ -545,9 +478,6 @@
                                     t
                                 )
                             )
-                        ;; nije ispunjen taj uslov za deobu steka
-                        ;; nil
-                        ;; )
                     )
                 )
                 ;;ukoliko ciljni cvor nema elemenata
@@ -594,7 +524,6 @@
 (defun findAppropriateNodes(state BW)
     (cond   ((null state) '())
             ((equal (car (caddr (findNode (caar state) state))) ".") (findAppropriateNodes (cdr state) BW))
-            ;; ((checkIfStackStartsWith (caddr (findNode (caar state) state)) 0) (cons (caar state) (findAppropriateNodes (cdr state) BW)))
             (t (cons (caar state) (findAppropriateNodes (cdr state) BW)))
     )
 )
@@ -615,21 +544,20 @@
            (createListWithHeights state startPoint endPoint (countStack nodeStack) 0)
     )
 )
-;; 
+;; kreira poteze sa svih visina
 (defun createListWithHeights(state startPoint endPoint nodeStack val)
     (cond ((equal val nodeStack) nil)
             (t (cons (makeMove state startPoint endPoint val T) 
                         (createListWithHeights state startPoint endPoint nodeStack (1+  val))))
     )
 )
-;; 
+;; proverava da li je potez dobar
 (defun goodNeighbour(state startPoint goodNodes)
     (cond ((null goodNodes) nil)
             (t (append (createDifferentMoves state startPoint (car goodNodes)) 
                             (goodNeighbour state startPoint (cdr goodNodes))))
     )
 )
-;; (trace makeMove)
 ;; Vraca stack od elementa n pa do prve tacke
 (defun getStackStartingFrom(stack n)
     (cond 
@@ -667,7 +595,7 @@
     )
 )
                                                     ;; Faza 3 - Minmax algoritam sa alfa-beta odsecanjem
-;; ;; Procena stanja, koliko koje vodi do pobede 
+                                                    ;; ;; Procena stanja, koliko koje vodi do pobede 
 ;; (defun evaluateState (state BW)
 ;;     (let ((node (car (findAppropriateNodes state BW))))
 ;;         (let ((stacks (findNode node state)))
@@ -675,13 +603,11 @@
 ;;             ;; (random 100)
 ;;         ) 
 ;;     )
-;; )
-;; (trace evaluateState)
-;;
+;; ) 
 (setq alpha MOST-NEGATIVE-FIXNUM)
 (setq beta MOST-POSITIVE-FIXNUM)
-;;
-(defun max-value (state alpha beta depth BW sizeOfTable) ;;graph parametar
+;; max pomocna funkcija za izracunavanje minmaxa sa alfa beta odsecanjem
+(defun max-value (state alpha beta depth BW sizeOfTable) 
     (cond 
         ((zerop depth) (list state (evaluateState state BW)))
         (t (let* ((maxalpha (list state alpha))
@@ -697,8 +623,8 @@
         )
     )
 )
-;;
-(defun min-value (state alpha beta depth BW sizeOfTable) ;;graph parametar
+;; min pomocna funkcija za izracunavanje minmaxa sa alfa beta odsecanjem
+(defun min-value (state alpha beta depth BW sizeOfTable) 
     (cond 
         ((zerop depth) (list state (evaluateState state BW)))
         (t  (let* ((minbeta (list state beta))
@@ -730,7 +656,7 @@
 	(if (and (Tile ?x) (OnTopTile ?y) (Height ?z) (!eq ?x ?y) (!eq ?x "O") (!eq ?z 8)) then (winnerO) )
 	)
 )
-;; 
+;; kreira cinjenice
 (defun createFacts(state player)
 	(let 
 		(
@@ -743,12 +669,11 @@
 			)
 			(setq myList (append myList (list (list 'Height (countStack (caddr state)) ))))
 			(setq myList (append myList (list (list 'OnTopTile (getTopOfStack (caddr state)) ))))
-			;; (setq myList (append myList (list (list 'OnTopTile (getTopOfStack (caddr state)) ))))
 		)
 		myList
 	)
 )
-;; 
+;; vraca vrh steka
 (defun getTopOfStack(stack)
 	(cond 
 		((null stack) '())
@@ -757,11 +682,11 @@
 		(t (getTopOfStack (cdr stack)))
 	)
 )
-;; 
+;; procena stanja
 (defun evaluateState(state BW) 
     (evaluateStateStack state BW)	
 )
-;; 
+;; procena stanja steka
 (defun evaluateStateStack(state BW)
 	(cond
 		((null state) 0)
@@ -1077,10 +1002,4 @@
     x)
    (t
     (cons (apply-ls (car x) ls) (apply-ls (cdr x) ls)))))
-;; (trace validateMove)
-;; (trace evaluateState)
-;; (trace minimax)
-;; (trace max-value)
-;; (trace min-value)
-;; (trace createClearList)
 (drawTable)
